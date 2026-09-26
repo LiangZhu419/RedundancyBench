@@ -54,7 +54,7 @@ StepCls and EvidenceRet evaluate one labeled step per request. StepDet asks the 
 For StepDet, let `n_i` be the number of predictions returned for trajectory `i`. Rank them by confidence and inspect the first `min(K, n_i)`. Let `h_i(K)` count exact matches on **step, evidence, and type**, with at most one hit per step. The benchmark reports the macro mean across trajectories:
 
 ```text
-P_i@K    = h_i(K) / min(K, n_i)        (0 when n_i = 0)
+P_i@K    = h_i(K) / min(K, n_i)       
 P@K      = mean_i(P_i@K)
 Avg P@K  = mean(P@1, P@5, P@10)
 ```
