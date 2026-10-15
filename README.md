@@ -3,11 +3,9 @@
 </h1>
 
 <p align="center">
-  <a href="#overview">Overview</a> ·
-  <a href="#benchmark">Benchmark</a> ·
-  <a href="#evaluation">Evaluation</a> ·
-  <a href="#run-the-benchmark">Run the benchmark</a> ·
-  <a href="data/">Dataset</a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="data/"><img src="https://img.shields.io/badge/Dataset-RedundancyBench-2ea44f.svg" alt="Dataset: RedundancyBench"></a>
+  <a href="https://arxiv.org/pdf/2605.29893"><img src="https://img.shields.io/badge/arXiv-2605.29893-b31b1b.svg" alt="arXiv: 2605.29893"></a>
 </p>
 
 > A benchmark for finding, classifying, and explaining redundant tool interactions in LLM agent trajectories.
@@ -136,4 +134,19 @@ redundancybench/
   evaluation.py                          Offline scoring and report CLI
   requirements.txt                       Python version; no external dependencies
   tests/                                 Release and metric checks
+```
+
+## 📖 Reference
+
+> [!IMPORTANT]
+> If you find RedundancyBench useful in your research, please consider citing our work:
+
+```bibtex
+@article{zhu2026redundant,
+  title   = {Redundant or Necessary? A Benchmark for Detecting Redundant Steps in Agent Trajectories},
+  author  = {Zhu, Liang and Yang, Bo and Zhou, Zhinuo and Liang, Jiachen and
+             Guo, Jiahao and Yin, Yiyang and Han, Xiongwei and Hu, Minyang},
+  journal = {arXiv preprint arXiv:2605.29893},
+  year    = {2026}
+}
 ```
