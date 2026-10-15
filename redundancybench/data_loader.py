@@ -58,9 +58,6 @@ class Trajectory:
     policy: str
     gold: tuple[GoldCase, ...]
 
-    def as_prompt_simulation(self) -> dict[str, Any]:
-        return {"messages": list(self.messages), "policy": self.policy}
-
 
 @dataclass(frozen=True)
 class Dataset:
@@ -70,10 +67,6 @@ class Dataset:
     @property
     def cases(self) -> tuple[GoldCase, ...]:
         return tuple(case for trajectory in self.trajectories for case in trajectory.gold)
-
-    @property
-    def domains(self) -> tuple[str, ...]:
-        return tuple(sorted({item.domain for item in self.trajectories}))
 
 
 def _read_json(path: Path) -> Any:

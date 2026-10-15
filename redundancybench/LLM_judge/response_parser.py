@@ -25,7 +25,10 @@ def _decode(text: str, expected: type) -> Any | None:
 def parse_classify(text: str) -> dict[str, Any]:
     value = _decode(text, dict)
     predicted = value.get("redundant_step_type") if value else None
-    return {"predicted_type": predicted if predicted in VALID_TYPES else None, "format_failed": predicted not in VALID_TYPES}
+    return {
+        "predicted_type": predicted if predicted in VALID_TYPES else None,
+        "format_failed": predicted not in VALID_TYPES,
+    }
 
 
 def parse_retrieve(text: str) -> dict[str, Any]:
@@ -49,13 +52,24 @@ def parse_detect(text: str) -> dict[str, Any]:
     predictions: list[dict[str, Any]] = []
     for source_rank, item in enumerate(value, 1):
         if not isinstance(item, dict):
-            predictions.append({"source_rank": source_rank, "valid": False, "confidence": None, "parse_error": "Prediction is not an object", "raw_item": item})
+            predictions.append({
+                "source_rank": source_rank,
+                "valid": False,
+                "confidence": None,
+                "parse_error": "Prediction is not an object",
+                "raw_item": item,
+            })
             continue
         step = normalize_ref(item.get("redundant_step_idx"), evidence=False)
         evidence = normalize_ref(item.get("evidence_step_idx"), evidence=True)
         kind = item.get("redundant_step_type")
         confidence = item.get("confidence")
-        valid_confidence = isinstance(confidence, (int, float)) and not isinstance(confidence, bool) and math.isfinite(confidence) and 0 <= confidence <= 1
+        valid_confidence = (
+            isinstance(confidence, (int, float))
+            and not isinstance(confidence, bool)
+            and math.isfinite(confidence)
+            and 0 <= confidence <= 1
+        )
         valid = step is not None and evidence is not None and kind in VALID_TYPES and valid_confidence
         predictions.append({
             "source_rank": source_rank,
@@ -68,11 +82,15 @@ def parse_detect(text: str) -> dict[str, Any]:
             **({"raw_item": item} if not valid else {}),
         })
     # Unrankable entries take the first, non-scoring Top-K slots.
-    predictions.sort(key=lambda item: item["confidence"] if item["confidence"] is not None else math.inf, reverse=True)
+    predictions.sort(
+        key=lambda item: item["confidence"] if item["confidence"] is not None else math.inf,
+        reverse=True,
+    )
     seen_steps: set[tuple[int, ...]] = set()
     for rank, item in enumerate(predictions, 1):
-        step = tuple(item["redundant_step_idx"]) if item.get("redundant_step_idx") is not None and item.get("confidence") is not None else None
-        if step is not None:
+        step = item.get("redundant_step_idx")
+        if step is not None and item.get("confidence") is not None:
+            step = tuple(step)
             if step in seen_steps:
                 item["duplicate"] = True
                 item["valid"] = False

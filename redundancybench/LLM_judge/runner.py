@@ -32,20 +32,6 @@ class RunConfig:
     reasoning_effort: str | None = None
     extra_body: dict[str, Any] | None = None
 
-    @classmethod
-    def from_mapping(cls, value: dict[str, Any]) -> "RunConfig":
-        return cls(
-            model=str(value["model"]),
-            base_url=str(value["base_url"]).rstrip("/"),
-            api_key_env=str(value.get("api_key_env", "OPENAI_API_KEY")),
-            temperature=float(value.get("temperature", 0)),
-            max_tokens=int(value.get("max_tokens", 32768)),
-            max_tokens_param=str(value.get("max_tokens_param", "max_tokens")),
-            timeout=float(value.get("timeout", 600)),
-            reasoning_effort=value.get("reasoning_effort"),
-            extra_body=dict(value.get("extra_body") or {}),
-        )
-
 
 def _atomic_write(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -90,7 +76,7 @@ def _request(config: RunConfig, system_prompt: str, user_prompt: str, api_key: s
     # Prevent extra_body from enabling streaming; parsers need a complete reply.
     body["stream"] = False
     payload = json.dumps(body, ensure_ascii=False).encode("utf-8")
-    endpoint = config.base_url + "/chat/completions"
+    endpoint = config.base_url.rstrip("/") + "/chat/completions"
     http_request = request.Request(
         endpoint,
         data=payload,
@@ -123,14 +109,19 @@ def _request(config: RunConfig, system_prompt: str, user_prompt: str, api_key: s
     return _content(message), metadata
 
 
-def _units(dataset: Dataset, task: str, domain: str | None = None, limit: int | None = None) -> list[tuple[str, Trajectory, GoldCase | None]]:
+def _units(
+    dataset: Dataset,
+    task: str,
+    domain: str | None = None,
+    limit: int | None = None,
+) -> list[tuple[Trajectory, GoldCase | None]]:
     selected = [item for item in dataset.trajectories if domain in (None, "all", item.domain)]
-    units: list[tuple[str, Trajectory, GoldCase | None]] = []
+    units: list[tuple[Trajectory, GoldCase | None]] = []
     for trajectory in selected:
         if task == "detect":
-            units.append((trajectory.trajectory_id, trajectory, None))
+            units.append((trajectory, None))
         else:
-            units.extend((case.trajectory_id + "::" + str(index), trajectory, case) for index, case in enumerate(trajectory.gold))
+            units.extend((trajectory, case) for case in trajectory.gold)
     return units if limit is None else units[:limit]
 
 
@@ -214,9 +205,14 @@ def run_task(
             )
     if dry_run:
         preview = []
-        for _, trajectory, case in units[:1]:
+        for trajectory, case in units[:1]:
             system, user = build_prompt(task, trajectory, case, include_policy=include_policy, max_predictions=max_predictions)
-            preview.append({"identity": _result_identity(task, trajectory, case), "system": system, "user": user, "prompt_sha256": _sha256(system + "\n\n" + user)})
+            preview.append({
+                "identity": _result_identity(task, trajectory, case),
+                "system": system,
+                "user": user,
+                "prompt_sha256": _sha256(system + "\n\n" + user),
+            })
         dry_path = model_dir / f"{file_model}_{task}.dry_run.json"
         _atomic_write(dry_path, {"metadata": payload["metadata"], "preview": preview})
         return dry_path
@@ -248,7 +244,7 @@ def run_task(
         if item.get("error") is None
     }
     parser: Callable[[str], dict[str, Any]] = PARSERS[task]
-    for _, trajectory, case in units:
+    for trajectory, case in units:
         identity = _result_identity(task, trajectory, case)
         if identity in existing:
             continue
