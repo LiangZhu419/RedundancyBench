@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
-  <a href="data/"><img src="https://img.shields.io/badge/Dataset-RedundancyBench-2ea44f.svg" alt="Dataset: RedundancyBench"></a>
+  <a href="https://huggingface.co/datasets/redundant-or-necessary/RedundancyBench"><img src="https://img.shields.io/badge/Dataset-RedundancyBench-2ea44f.svg" alt="Dataset: RedundancyBench"></a>
   <a href="https://arxiv.org/pdf/2605.29893"><img src="https://img.shields.io/badge/arXiv-2605.29893-b31b1b.svg" alt="arXiv: 2605.29893"></a>
 </p>
 
